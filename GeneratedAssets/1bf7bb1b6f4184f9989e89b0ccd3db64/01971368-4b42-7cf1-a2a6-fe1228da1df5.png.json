@@ -1,0 +1,19 @@
+{
+    "asset": "1bf7bb1b6f4184f9989e89b0ccd3db64",
+    "fileName": "01971368-4b42-7cf1-a2a6-fe1228da1df5.png",
+    "prompt": "create a basic ground sprite for an industrial landscap.",
+    "negativePrompt": "",
+    "model": "b91fcf71-f4cf-43cb-ba1e-1f22a1296e46",
+    "customSeed": -1,
+    "w3CTraceId": "adddf535498debf2d1f227d2519873d9",
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0
+}

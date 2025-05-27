@@ -1,0 +1,19 @@
+{
+    "asset": "d61dbfcd737a648c8aa3b567fc0618c7",
+    "fileName": "01971365-8067-748b-b4c7-bcd4c19e19b4.png",
+    "prompt": "Create a simple 32x32 pixel sprite for a 2D platformer game character representing a mechanical mech pilot. The sprite should be:\n\n- Top-down or side-view perspective for 2D platformer\n- Simple geometric shapes and bold colors for easy visibility\n- Predominantly metallic colors (grays, blues) with bright accent colors (orange, green)\n- Clear silhouette that reads well at small sizes\n- Blocky, angular design suggesting mechanical/robotic nature\n- Single frame (no animation), idle standing pose\n- Transparent background\n- Pixel art style with clean, defined edges\n- Should look good when scaled up or down in Unity\n\nStyle: Retro pixel art, 16-bit era gaming aesthetic, similar to Mega Man X or Metroid sprites but more geometric/mechanical.",
+    "negativePrompt": "",
+    "model": "b91fcf71-f4cf-43cb-ba1e-1f22a1296e46",
+    "customSeed": -1,
+    "w3CTraceId": "4085dd6d491f7790009087f0652ad16c",
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0
+}
