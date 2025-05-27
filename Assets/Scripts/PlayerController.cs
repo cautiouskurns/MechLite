@@ -17,12 +17,11 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float dashForce = 15f;
     
     [Header("Ground Detection")]
-    [SerializeField] private LayerMask groundLayerMask = 1; // Default layer
-    [SerializeField] private float groundCheckDistance = 0.2f; // Increased for better detection
-    [SerializeField] private float groundCheckWidth = 0.8f; // Width of ground check
+    [SerializeField] private LayerMask groundLayerMask = 1 << 8; // Layer 8 for Ground
+    [SerializeField] private float groundCheckDistance = 2.0f; // Increased for testing
     
     [Header("Debug")]
-    [SerializeField] private bool enableDebugLogs = false;
+    [SerializeField] private bool enableDebugLogs = true; // Enabled for testing
     
     // Component references
     private Rigidbody2D rb2d;
@@ -114,12 +113,11 @@ public class PlayerController : MonoBehaviour
     
     private void CheckGrounded()
     {
-        // Use multiple raycasts for more reliable ground detection
-        Vector2 boxCenter = (Vector2)transform.position + Vector2.down * (boxCollider.size.y / 2);
-        Vector2 boxSize = new Vector2(groundCheckWidth, groundCheckDistance);
+        // Cast a ray downward from the bottom of the player collider
+        Vector2 raycastOrigin = (Vector2)transform.position + Vector2.down * (boxCollider.size.y / 2);
         
-        // Use BoxCast for more reliable ground detection
-        RaycastHit2D hit = Physics2D.BoxCast(boxCenter, boxSize, 0f, Vector2.down, 0f, groundLayerMask);
+        // Perform the raycast
+        RaycastHit2D hit = Physics2D.Raycast(raycastOrigin, Vector2.down, groundCheckDistance, groundLayerMask);
         
         bool wasGrounded = isGrounded;
         isGrounded = hit.collider != null;
@@ -130,26 +128,10 @@ public class PlayerController : MonoBehaviour
             lastGroundedTime = Time.time;
         }
         
-        // Debug visualization and logging
-        if (enableDebugLogs)
+        // Log ground state changes for debugging
+        if (enableDebugLogs && wasGrounded != isGrounded)
         {
-            // Draw the box cast area
-            Vector3 boxCorner1 = boxCenter + new Vector2(-boxSize.x/2, -boxSize.y/2);
-            Vector3 boxCorner2 = boxCenter + new Vector2(boxSize.x/2, -boxSize.y/2);
-            Vector3 boxCorner3 = boxCenter + new Vector2(boxSize.x/2, boxSize.y/2);
-            Vector3 boxCorner4 = boxCenter + new Vector2(-boxSize.x/2, boxSize.y/2);
-            
-            Color debugColor = isGrounded ? Color.green : Color.red;
-            Debug.DrawLine(boxCorner1, boxCorner2, debugColor);
-            Debug.DrawLine(boxCorner2, boxCorner3, debugColor);
-            Debug.DrawLine(boxCorner3, boxCorner4, debugColor);
-            Debug.DrawLine(boxCorner4, boxCorner1, debugColor);
-            
-            // Log ground state changes
-            if (wasGrounded != isGrounded)
-            {
-                Debug.Log($"PlayerController: Ground state changed - isGrounded: {isGrounded}");
-            }
+            Debug.Log($"PlayerController: Ground state changed - isGrounded: {isGrounded}");
         }
     }
     
@@ -254,4 +236,30 @@ public class PlayerController : MonoBehaviour
     public bool IsGrounded => isGrounded;
     public bool CanDash => canDash;
     public Vector2 Velocity => rb2d.linearVelocity;
+    
+    /// <summary>
+    /// Debug visualization for ground detection
+    /// Shows a green line when grounded, red when not grounded
+    /// </summary>
+    private void OnDrawGizmos()
+    {
+        if (boxCollider == null) return;
+        
+        // Calculate raycast origin (bottom of collider)
+        Vector2 raycastOrigin = (Vector2)transform.position + Vector2.down * (boxCollider.size.y / 2);
+        Vector2 raycastEnd = raycastOrigin + Vector2.down * groundCheckDistance;
+        
+        // Perform real-time raycast to get accurate ground state for gizmo
+        RaycastHit2D hit = Physics2D.Raycast(raycastOrigin, Vector2.down, groundCheckDistance, groundLayerMask);
+        bool isCurrentlyGrounded = hit.collider != null;
+        
+        // Set gizmo color based on real-time ground state
+        Gizmos.color = isCurrentlyGrounded ? Color.green : Color.red;
+        
+        // Draw the ground detection ray
+        Gizmos.DrawLine(raycastOrigin, raycastEnd);
+        
+        // Draw a small sphere at the raycast origin for visibility
+        Gizmos.DrawWireSphere(raycastOrigin, 0.05f);
+    }
 }
