@@ -18,7 +18,7 @@ public class PlayerController : MonoBehaviour
     
     [Header("Ground Detection")]
     [SerializeField] private LayerMask groundLayerMask = 1 << 8; // Layer 8 for Ground
-    [SerializeField] private float groundCheckDistance = 2.0f; // Increased for testing
+    [SerializeField] private float groundCheckDistance = 0.2f; // Increased for testing
     
     [Header("Debug")]
     [SerializeField] private bool enableDebugLogs = true; // Enabled for testing
@@ -41,10 +41,12 @@ public class PlayerController : MonoBehaviour
     
     // Jump timing variables
     private float lastGroundedTime;
-    private float lastJumpInputTime;
+    private float lastJumpInputTime = -1f; // Initialize to prevent auto-jump
     
     void Start()
     {
+        Debug.Log("=== PLAYERCONTROLLER START METHOD CALLED ===");
+        
         // Get component references
         rb2d = GetComponent<Rigidbody2D>();
         boxCollider = GetComponent<BoxCollider2D>();
@@ -64,6 +66,15 @@ public class PlayerController : MonoBehaviour
         if (spriteRenderer == null)
         {
             Debug.LogError("PlayerController: SpriteRenderer component missing!");
+        }
+        
+        Debug.Log($"PlayerController: Jump force set to {jumpForce}");
+        Debug.Log($"PlayerController: Ground check distance set to {groundCheckDistance}");
+        
+        // Set initial sprite direction (face right)
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.flipX = true; // Face right by default (flipX = false means facing right)
         }
         
         if (enableDebugLogs)
@@ -137,6 +148,13 @@ public class PlayerController : MonoBehaviour
     
     private void HandleMovement()
     {
+        // Only allow horizontal movement when grounded
+        if (!isGrounded)
+        {
+            // Preserve current horizontal velocity when in air, don't allow direction changes
+            return;
+        }
+        
         // Calculate target velocity
         float targetVelocityX = horizontalInput * moveSpeed;
         
@@ -152,11 +170,11 @@ public class PlayerController : MonoBehaviour
         // Handle sprite flipping based on movement direction
         if (horizontalInput > 0.1f)
         {
-            spriteRenderer.flipX = false; // Face right
+            spriteRenderer.flipX = true; // Face right (moving right)
         }
         else if (horizontalInput < -0.1f)
         {
-            spriteRenderer.flipX = true;  // Face left
+            spriteRenderer.flipX = false;  // Face left (moving left)
         }
         
         // Clamp to maximum speed (safety check)
@@ -172,6 +190,12 @@ public class PlayerController : MonoBehaviour
         bool canJumpGrounded = isGrounded || (Time.time - lastGroundedTime < coyoteTime);
         bool hasJumpInput = Time.time - lastJumpInputTime < jumpBufferTime;
         
+        // Debug jump input detection
+        if (jumpInput && enableDebugLogs)
+        {
+            Debug.Log($"PlayerController: Jump input detected! CanJump: {canJumpGrounded}, HasRecentInput: {hasJumpInput}");
+        }
+        
         // Only jump if we have recent input and are recently grounded
         if (hasJumpInput && canJumpGrounded)
         {
@@ -182,7 +206,7 @@ public class PlayerController : MonoBehaviour
             
             if (enableDebugLogs)
             {
-                Debug.Log($"PlayerController: Jump executed - Grounded: {isGrounded}, CoyoteTime: {canJumpGrounded}");
+                Debug.Log($"PlayerController: Jump executed - Grounded: {isGrounded}, CoyoteTime: {canJumpGrounded}, JumpForce: {jumpForce}");
             }
         }
         
