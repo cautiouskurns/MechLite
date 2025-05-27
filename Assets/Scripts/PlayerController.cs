@@ -10,12 +10,16 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float acceleration = 10f; // How quickly we reach max speed
     [SerializeField] private float deceleration = 10f; // How quickly we stop
+    [Header("Jump Settings")]
+    [SerializeField] private float coyoteTime = 0.15f; // Grace period after leaving ground
+    [SerializeField] private float jumpBufferTime = 0.1f; // Input buffer for jump
     [SerializeField] private float jumpForce = 10f;
     [SerializeField] private float dashForce = 15f;
     
     [Header("Ground Detection")]
     [SerializeField] private LayerMask groundLayerMask = 1; // Default layer
-    [SerializeField] private float groundCheckDistance = 0.1f;
+    [SerializeField] private float groundCheckDistance = 0.2f; // Increased for better detection
+    [SerializeField] private float groundCheckWidth = 0.8f; // Width of ground check
     
     [Header("Debug")]
     [SerializeField] private bool enableDebugLogs = false;
@@ -35,6 +39,10 @@ public class PlayerController : MonoBehaviour
     private bool canDash = true;
     private float lastDashTime;
     private float dashCooldown = 1f;
+    
+    // Jump timing variables
+    private float lastGroundedTime;
+    private float lastJumpInputTime;
     
     void Start()
     {
@@ -96,20 +104,52 @@ public class PlayerController : MonoBehaviour
         horizontalInput = Input.GetAxis("Horizontal");
         jumpInput = Input.GetKeyDown(KeyCode.Space);
         dashInput = Input.GetKeyDown(KeyCode.LeftShift);
+        
+        // Track jump input timing for buffering
+        if (jumpInput)
+        {
+            lastJumpInputTime = Time.time;
+        }
     }
     
     private void CheckGrounded()
     {
-        // Cast a ray downward from the bottom of the collider
-        Vector2 rayOrigin = (Vector2)transform.position + Vector2.down * (boxCollider.size.y / 2);
-        RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.down, groundCheckDistance, groundLayerMask);
+        // Use multiple raycasts for more reliable ground detection
+        Vector2 boxCenter = (Vector2)transform.position + Vector2.down * (boxCollider.size.y / 2);
+        Vector2 boxSize = new Vector2(groundCheckWidth, groundCheckDistance);
         
+        // Use BoxCast for more reliable ground detection
+        RaycastHit2D hit = Physics2D.BoxCast(boxCenter, boxSize, 0f, Vector2.down, 0f, groundLayerMask);
+        
+        bool wasGrounded = isGrounded;
         isGrounded = hit.collider != null;
         
-        // Debug visualization
+        // Update ground timing for coyote time
+        if (isGrounded)
+        {
+            lastGroundedTime = Time.time;
+        }
+        
+        // Debug visualization and logging
         if (enableDebugLogs)
         {
-            Debug.DrawRay(rayOrigin, Vector2.down * groundCheckDistance, isGrounded ? Color.green : Color.red);
+            // Draw the box cast area
+            Vector3 boxCorner1 = boxCenter + new Vector2(-boxSize.x/2, -boxSize.y/2);
+            Vector3 boxCorner2 = boxCenter + new Vector2(boxSize.x/2, -boxSize.y/2);
+            Vector3 boxCorner3 = boxCenter + new Vector2(boxSize.x/2, boxSize.y/2);
+            Vector3 boxCorner4 = boxCenter + new Vector2(-boxSize.x/2, boxSize.y/2);
+            
+            Color debugColor = isGrounded ? Color.green : Color.red;
+            Debug.DrawLine(boxCorner1, boxCorner2, debugColor);
+            Debug.DrawLine(boxCorner2, boxCorner3, debugColor);
+            Debug.DrawLine(boxCorner3, boxCorner4, debugColor);
+            Debug.DrawLine(boxCorner4, boxCorner1, debugColor);
+            
+            // Log ground state changes
+            if (wasGrounded != isGrounded)
+            {
+                Debug.Log($"PlayerController: Ground state changed - isGrounded: {isGrounded}");
+            }
         }
     }
     
@@ -146,15 +186,28 @@ public class PlayerController : MonoBehaviour
     
     private void HandleJump()
     {
-        // Only jump if grounded and jump input was pressed
-        if (jumpInput && isGrounded)
+        // Check if we can jump using coyote time and jump buffering
+        bool canJumpGrounded = isGrounded || (Time.time - lastGroundedTime < coyoteTime);
+        bool hasJumpInput = Time.time - lastJumpInputTime < jumpBufferTime;
+        
+        // Only jump if we have recent input and are recently grounded
+        if (hasJumpInput && canJumpGrounded)
         {
             rb2d.linearVelocity = new Vector2(rb2d.linearVelocity.x, jumpForce);
             
+            // Clear the jump input buffer so we don't double jump
+            lastJumpInputTime = 0f;
+            
             if (enableDebugLogs)
             {
-                Debug.Log("PlayerController: Jump executed");
+                Debug.Log($"PlayerController: Jump executed - Grounded: {isGrounded}, CoyoteTime: {canJumpGrounded}");
             }
+        }
+        
+        // Debug jump state when jump is attempted but fails
+        if (jumpInput && !canJumpGrounded && enableDebugLogs)
+        {
+            Debug.Log($"PlayerController: Jump attempted but failed - Grounded: {isGrounded}, TimeSinceGrounded: {Time.time - lastGroundedTime:F2}");
         }
     }
     

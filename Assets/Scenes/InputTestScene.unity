@@ -198,12 +198,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   moveSpeed: 5
+  acceleration: 10
+  deceleration: 10
+  coyoteTime: 0.15
+  jumpBufferTime: 0.1
   jumpForce: 10
   dashForce: 15
   groundLayerMask:
     serializedVersion: 2
     m_Bits: 1
   groundCheckDistance: 0.1
+  groundCheckWidth: 0.8
   enableDebugLogs: 0
 --- !u!61 &1031944748
 BoxCollider2D:
