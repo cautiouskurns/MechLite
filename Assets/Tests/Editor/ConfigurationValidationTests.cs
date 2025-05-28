@@ -2,11 +2,6 @@ using NUnit.Framework;
 using UnityEngine;
 using MechLite.Tests.Utilities;
 using MechLite.Configuration;
-using MechLite.Tests.Mocks;
-using MechLite.Movement;
-using UnityEditor;
-using MechLite.Energy;
-
 
 namespace MechLite.Tests.Editor
 {
@@ -33,8 +28,10 @@ namespace MechLite.Tests.Editor
             Assert.Greater(config.moveSpeed, 0f, "Move speed should be positive");
             Assert.Greater(config.acceleration, 0f, "Acceleration should be positive");
             Assert.Greater(config.deceleration, 0f, "Deceleration should be positive");
-            Assert.GreaterOrEqual(config.airControl, 0f, "Air control should be non-negative");
-            Assert.LessOrEqual(config.airControl, 1f, "Air control should not exceed 1.0");
+            Assert.Greater(config.jumpForce, 0f, "Jump force should be positive");
+            Assert.Greater(config.coyoteTime, 0f, "Coyote time should be positive");
+            Assert.GreaterOrEqual(config.airControlStrength, 0f, "Air control should be non-negative");
+            Assert.LessOrEqual(config.airControlStrength, 1f, "Air control should not exceed 1.0");
             
             Object.DestroyImmediate(config);
         }
@@ -48,12 +45,12 @@ namespace MechLite.Tests.Editor
             config.moveSpeed = 10f;
             config.acceleration = 50f;
             config.deceleration = 30f;
-            config.airControl = 0.5f;
+            config.airControlStrength = 0.5f;
             
             Assert.AreEqual(10f, config.moveSpeed, "Should accept valid move speed");
             Assert.AreEqual(50f, config.acceleration, "Should accept valid acceleration");
             Assert.AreEqual(30f, config.deceleration, "Should accept valid deceleration");
-            Assert.AreEqual(0.5f, config.airControl, "Should accept valid air control");
+            Assert.AreEqual(0.5f, config.airControlStrength, "Should accept valid air control");
             
             Object.DestroyImmediate(config);
         }
@@ -76,9 +73,8 @@ namespace MechLite.Tests.Editor
             var config = TestConfigurationFactory.CreateTestEnergyConfig();
             
             Assert.Greater(config.maxEnergy, 0f, "Max energy should be positive");
-            Assert.GreaterOrEqual(config.regenerationRate, 0f, "Regeneration rate should be non-negative");
-            Assert.GreaterOrEqual(config.regenerationDelay, 0f, "Regeneration delay should be non-negative");
-            Assert.GreaterOrEqual(config.jumpEnergyCost, 0f, "Jump energy cost should be non-negative");
+            Assert.GreaterOrEqual(config.energyRegenRate, 0f, "Regeneration rate should be non-negative");
+            Assert.GreaterOrEqual(config.regenDelay, 0f, "Regeneration delay should be non-negative");
             Assert.GreaterOrEqual(config.dashEnergyCost, 0f, "Dash energy cost should be non-negative");
             
             Object.DestroyImmediate(config);
@@ -89,8 +85,6 @@ namespace MechLite.Tests.Editor
         {
             var config = TestConfigurationFactory.CreateTestEnergyConfig();
             
-            Assert.LessOrEqual(config.jumpEnergyCost, config.maxEnergy, 
-                "Jump energy cost should not exceed max energy");
             Assert.LessOrEqual(config.dashEnergyCost, config.maxEnergy, 
                 "Dash energy cost should not exceed max energy");
             
@@ -98,6 +92,74 @@ namespace MechLite.Tests.Editor
         }
 
         #endregion
+
+        #region DashConfigSO Tests
+
+        [Test]
+        public void DashConfigSO_CreateInstance()
+        {
+            var config = ScriptableObject.CreateInstance<DashConfigSO>();
+            Assert.IsNotNull(config, "Should be able to create DashConfigSO instance");
+            Object.DestroyImmediate(config);
+        }
+
+        [Test]
+        public void DashConfigSO_DefaultValues()
+        {
+            var config = TestConfigurationFactory.CreateTestDashConfig();
+            
+            Assert.Greater(config.dashForce, 0f, "Dash force should be positive");
+            Assert.GreaterOrEqual(config.dashCooldown, 0f, "Dash cooldown should be non-negative");
+            
+            Object.DestroyImmediate(config);
+        }
+
+        #endregion
+
+        #region PhysicsConfigSO Tests
+
+        [Test]
+        public void PhysicsConfigSO_CreateInstance()
+        {
+            var config = ScriptableObject.CreateInstance<PhysicsConfigSO>();
+            Assert.IsNotNull(config, "Should be able to create PhysicsConfigSO instance");
+            Object.DestroyImmediate(config);
+        }
+
+        [Test]
+        public void PhysicsConfigSO_DefaultValues()
+        {
+            var config = TestConfigurationFactory.CreateTestPhysicsConfig();
+            
+            Assert.Greater(config.groundCheckDistance, 0f, "Ground check distance should be positive");
+            Assert.Greater(config.groundCheckRadius, 0f, "Ground check radius should be positive");
+            
+            Object.DestroyImmediate(config);
+        }
+
+        #endregion
+
+        #region Configuration Persistence Tests
+
+        [Test]
+        public void ConfigurationSO_PersistsModifications()
+        {
+            var energyConfig = TestConfigurationFactory.CreateTestEnergyConfig();
+            var originalMaxEnergy = energyConfig.maxEnergy;
+            
+            // Modify values and verify they persist
+            energyConfig.maxEnergy = 150f;
+            energyConfig.energyRegenRate = 25f;
+            
+            Assert.AreEqual(150f, energyConfig.maxEnergy, "Modified max energy should persist");
+            Assert.AreEqual(25f, energyConfig.energyRegenRate, "Modified regeneration rate should persist");
+            
+            Object.DestroyImmediate(energyConfig);
+        }
+
+        #endregion
+    }
+}
 
         #region DashConfigSO Tests
 

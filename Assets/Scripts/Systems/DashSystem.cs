@@ -31,6 +31,16 @@ namespace MechLite.Movement
         public bool CanDash => dashCooldownTimer <= 0f && HasSufficientEnergy();
         public float DashCooldownRemaining => Mathf.Max(0f, dashCooldownTimer);
         
+        /// <summary>
+        /// Initialize the dash system with configuration and energy system
+        /// Used by tests and programmatic setup
+        /// </summary>
+        public void Initialize(DashConfigSO config, IEnergyUser energy)
+        {
+            dashConfig = config;
+            energySystem = energy;
+        }
+        
         private void Awake()
         {
             rb2d = GetComponent<Rigidbody2D>();

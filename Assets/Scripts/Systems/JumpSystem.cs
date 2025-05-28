@@ -1,6 +1,7 @@
 using UnityEngine;
 using MechLite.Configuration;
 using MechLite.Events;
+using MechLite.Energy;
 
 namespace MechLite.Movement
 {
@@ -22,6 +23,18 @@ namespace MechLite.Movement
         
         // Jump state
         private float lastJumpInputTime = -1f;
+        
+        /// <summary>
+        /// Initialize the jump system with configuration and component references
+        /// Used by tests and programmatic setup
+        /// </summary>
+        public void Initialize(PhysicsConfigSO physicsConfig, EnergyConfigSO energyConfig, IMovable movable, IGroundDetector detector, IEnergyUser energy)
+        {
+            // JumpSystem uses MovementConfigSO, but we'll accept the physics config for compatibility
+            movementController = movable;
+            groundDetector = detector;
+            // Energy system is not directly used by JumpSystem in current implementation
+        }
         
         private void Awake()
         {

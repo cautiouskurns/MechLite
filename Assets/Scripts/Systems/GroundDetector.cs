@@ -30,6 +30,25 @@ namespace MechLite.Movement
         public float CoyoteTimeRemaining => Mathf.Max(0f, (movementConfig?.coyoteTime ?? 0.15f) - (Time.time - lastGroundedTime));
         public bool WasRecentlyGrounded => CoyoteTimeRemaining > 0f;
         
+        /// <summary>
+        /// Initialize the ground detector with configuration
+        /// Used by tests and programmatic setup
+        /// </summary>
+        public void Initialize(PhysicsConfigSO config)
+        {
+            physicsConfig = config;
+        }
+        
+        /// <summary>
+        /// Initialize the ground detector with both configurations
+        /// Used by tests and programmatic setup
+        /// </summary>
+        public void Initialize(PhysicsConfigSO physicsConf, MovementConfigSO movementConf)
+        {
+            physicsConfig = physicsConf;
+            movementConfig = movementConf;
+        }
+        
         private void Awake()
         {
             boxCollider = GetComponent<BoxCollider2D>();

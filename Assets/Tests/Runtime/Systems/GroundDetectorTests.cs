@@ -16,6 +16,7 @@ namespace MechLite.Tests.Systems
         private GameObject testObject;
         private GroundDetector groundDetector;
         private PhysicsConfigSO testConfig;
+        private MovementConfigSO movementConfig;
         private EventCapture eventCapture;
         private GameObject groundObject;
 
@@ -32,6 +33,7 @@ namespace MechLite.Tests.Systems
             
             groundDetector = testObject.AddComponent<GroundDetector>();
             testConfig = TestConfigurationFactory.CreateTestPhysicsConfig();
+            movementConfig = TestConfigurationFactory.CreateTestMovementConfig();
             eventCapture = new EventCapture();
             eventCapture.Subscribe();
             
@@ -53,6 +55,8 @@ namespace MechLite.Tests.Systems
                 Object.DestroyImmediate(groundObject);
             if (testConfig != null)
                 Object.DestroyImmediate(testConfig);
+            if (movementConfig != null)
+                Object.DestroyImmediate(movementConfig);
         }
 
         #region Interface Contract Tests
@@ -175,7 +179,7 @@ namespace MechLite.Tests.Systems
         [UnityTest]
         public IEnumerator UpdateGroundTiming_ExpiresCoyoteTime()
         {
-            groundDetector.Initialize(testConfig);
+            groundDetector.Initialize(testConfig, movementConfig);
             testObject.transform.position = new Vector3(0, -1f, 0);
             groundDetector.CheckGrounded(); // Become grounded
             
@@ -183,7 +187,7 @@ namespace MechLite.Tests.Systems
             groundDetector.CheckGrounded();
             
             // Wait for coyote time to expire
-            yield return new WaitForSeconds(testConfig.coyoteTime + 0.1f);
+            yield return new WaitForSeconds(movementConfig.coyoteTime + 0.1f);
             groundDetector.UpdateGroundTiming();
             
             Assert.AreEqual(0f, groundDetector.CoyoteTimeRemaining, "Coyote time should expire to zero");
@@ -255,19 +259,17 @@ namespace MechLite.Tests.Systems
         public void Initialize_WithNullConfig_HandlesGracefully()
         {
             Assert.DoesNotThrow(() => groundDetector.Initialize(null), "Should handle null config gracefully");
-        }
-
-        [Test]
+        }        [Test]
         public void CoyoteTime_UsesConfigurationValue()
         {
-            groundDetector.Initialize(testConfig);
+            groundDetector.Initialize(testConfig, movementConfig);
             testObject.transform.position = new Vector3(0, -1f, 0);
             groundDetector.CheckGrounded(); // Become grounded
             
             testObject.transform.position = new Vector3(0, 5f, 0); // Leave ground
             groundDetector.CheckGrounded();
             
-            Assert.AreEqual(testConfig.coyoteTime, groundDetector.CoyoteTimeRemaining, 0.01f, 
+            Assert.AreEqual(movementConfig.coyoteTime, groundDetector.CoyoteTimeRemaining, 0.01f,
                 "Coyote time should match configuration value");
         }
 

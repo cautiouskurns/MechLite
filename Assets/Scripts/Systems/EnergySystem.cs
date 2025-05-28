@@ -25,6 +25,16 @@ namespace MechLite.Energy
         public float MaxEnergy => energyConfig?.maxEnergy ?? 100f;
         public float EnergyPercent => currentEnergy / MaxEnergy;
         
+        /// <summary>
+        /// Initialize the energy system with configuration
+        /// Used by tests and programmatic setup
+        /// </summary>
+        public void Initialize(EnergyConfigSO config)
+        {
+            energyConfig = config;
+            currentEnergy = MaxEnergy;
+        }
+        
         private void Awake()
         {
             if (energyConfig == null)

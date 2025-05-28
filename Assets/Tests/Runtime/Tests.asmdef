@@ -1,6 +1,10 @@
 {
     "name": "MechLite.Tests",
-    "references": ["MechLite"],
+    "references": [
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner",
+        "MechLite"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

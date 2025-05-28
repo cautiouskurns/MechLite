@@ -29,6 +29,16 @@ namespace MechLite.Movement
         public Vector2 Velocity => rb2d.linearVelocity;
         public bool IsGrounded => isGrounded;
         
+        /// <summary>
+        /// Initialize the movement controller with configuration and ground detector
+        /// Used by tests and programmatic setup
+        /// </summary>
+        public void Initialize(MovementConfigSO config, GroundDetector detector)
+        {
+            movementConfig = config;
+            // Ground detector is handled through events, no direct reference needed
+        }
+        
         private void Awake()
         {
             rb2d = GetComponent<Rigidbody2D>();
