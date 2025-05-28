@@ -18,16 +18,16 @@ namespace MechSalvager.Player
         [SerializeField] private GroundDetector groundDetector;
         [SerializeField] private DashSystem dashSystem;
         [SerializeField] private JumpSystem jumpSystem;
-
+        
         [Header("Debug")]
         [SerializeField] private bool enableDebugLogs = false;
         [SerializeField] private bool enableRuntimeTuning = false;
-
+        
         // Input tracking
         private float horizontalInput;
         private bool jumpInput;
         private bool dashInput;
-
+        
         // Public API properties (maintains compatibility with original PlayerController)
         public bool IsGrounded => groundDetector?.IsGrounded ?? false;
         public bool CanDashState => dashSystem?.CanDash ?? false;
@@ -36,7 +36,7 @@ namespace MechSalvager.Player
         public float MaxEnergy => energySystem?.MaxEnergy ?? 100f;
         public float EnergyPercent => energySystem?.EnergyPercent ?? 0f;
         public float DashCooldownRemaining => dashSystem?.DashCooldownRemaining ?? 0f;
-
+        
         private void Awake()
         {
             // Auto-find systems if not assigned
@@ -50,23 +50,23 @@ namespace MechSalvager.Player
                 dashSystem = GetComponent<DashSystem>();
             if (jumpSystem == null)
                 jumpSystem = GetComponent<JumpSystem>();
-
+            
             ValidateSystemReferences();
         }
-
+        
         private void Start()
         {
             Debug.Log("=== REFACTORED PLAYERCONTROLLER START METHOD CALLED ===");
-
+            
             // Subscribe to events for debugging
             if (enableDebugLogs)
             {
                 SubscribeToEvents();
             }
-
+            
             Debug.Log("PlayerController: Initialized successfully with new architecture");
         }
-
+        
         private void OnDestroy()
         {
             // Unsubscribe from events
@@ -75,26 +75,26 @@ namespace MechSalvager.Player
                 UnsubscribeFromEvents();
             }
         }
-
+        
         private void Update()
         {
             // Read input
             ReadInput();
-
+            
             // Update last movement direction for dash system
             if (dashSystem != null && horizontalInput != 0)
             {
                 Vector2 moveDirection = horizontalInput > 0 ? Vector2.right : Vector2.left;
                 dashSystem.SetLastMoveDirection(moveDirection);
             }
-
+            
             // Debug logging
             if (enableDebugLogs)
             {
                 LogPlayerState();
             }
         }
-
+        
         private void FixedUpdate()
         {
             // Delegate to systems in the correct order
@@ -102,7 +102,7 @@ namespace MechSalvager.Player
             HandleJump();
             HandleDash();
         }
-
+        
         private void ReadInput()
         {
             // Use the same input system as the original
@@ -110,7 +110,7 @@ namespace MechSalvager.Player
             jumpInput = Input.GetKeyDown(KeyCode.Space);
             dashInput = Input.GetKeyDown(KeyCode.E);
         }
-
+        
         private void HandleMovement()
         {
             if (movementController != null)
@@ -119,7 +119,7 @@ namespace MechSalvager.Player
                 movementController.Move();
             }
         }
-
+        
         private void HandleJump()
         {
             if (jumpSystem != null)
@@ -127,7 +127,7 @@ namespace MechSalvager.Player
                 jumpSystem.ProcessJumpInput(jumpInput);
             }
         }
-
+        
         private void HandleDash()
         {
             if (dashInput && dashSystem != null)
@@ -135,7 +135,7 @@ namespace MechSalvager.Player
                 dashSystem.Dash(horizontalInput);
             }
         }
-
+        
         private void ValidateSystemReferences()
         {
             if (movementController == null)
@@ -149,7 +149,7 @@ namespace MechSalvager.Player
             if (jumpSystem == null)
                 Debug.LogError("PlayerController: JumpSystem component missing!");
         }
-
+        
         private void SubscribeToEvents()
         {
             PlayerEventBus.OnPlayerMoved += OnPlayerMoved;
@@ -158,7 +158,7 @@ namespace MechSalvager.Player
             PlayerEventBus.OnEnergyChanged += OnEnergyChanged;
             PlayerEventBus.OnGroundStateChanged += OnGroundStateChanged;
         }
-
+        
         private void UnsubscribeFromEvents()
         {
             PlayerEventBus.OnPlayerMoved -= OnPlayerMoved;
@@ -167,7 +167,7 @@ namespace MechSalvager.Player
             PlayerEventBus.OnEnergyChanged -= OnEnergyChanged;
             PlayerEventBus.OnGroundStateChanged -= OnGroundStateChanged;
         }
-
+        
         private void LogPlayerState()
         {
             if (Time.frameCount % 60 == 0) // Log every 60 frames to avoid spam
@@ -180,13 +180,13 @@ namespace MechSalvager.Player
                          $"DashCD: {DashCooldownRemaining:F2}s");
             }
         }
-
+        
         // Event handlers for debugging
         private void OnPlayerMoved(PlayerMovedEvent eventData)
         {
             // Could trigger visual effects, sound, etc.
         }
-
+        
         private void OnPlayerJumped(PlayerJumpedEvent eventData)
         {
             if (enableDebugLogs)
@@ -194,7 +194,7 @@ namespace MechSalvager.Player
                 Debug.Log($"PlayerController: Jump event - CoyoteTime: {eventData.usedCoyoteTime}, Buffer: {eventData.usedJumpBuffer}");
             }
         }
-
+        
         private void OnPlayerDashed(PlayerDashedEvent eventData)
         {
             if (enableDebugLogs)
@@ -202,12 +202,12 @@ namespace MechSalvager.Player
                 Debug.Log($"PlayerController: Dash event - Direction: {eventData.dashDirection}, Energy: {eventData.remainingEnergy}");
             }
         }
-
+        
         private void OnEnergyChanged(EnergyChangedEvent eventData)
         {
             // Could update UI, trigger effects based on energy level, etc.
         }
-
+        
         private void OnGroundStateChanged(GroundStateChangedEvent eventData)
         {
             if (enableDebugLogs)
@@ -215,9 +215,9 @@ namespace MechSalvager.Player
                 Debug.Log($"PlayerController: Ground state changed - isGrounded: {eventData.isGrounded}");
             }
         }
-
+        
         // Public methods for external systems (maintains API compatibility)
-
+        
         /// <summary>
         /// Get whether dash is available (legacy compatibility)
         /// </summary>
@@ -225,7 +225,7 @@ namespace MechSalvager.Player
         {
             return dashSystem?.CanDash ?? false;
         }
-
+        
         /// <summary>
         /// Check if player has enough energy for an action
         /// </summary>
@@ -235,7 +235,7 @@ namespace MechSalvager.Player
         {
             return energySystem?.HasEnergy(amount) ?? false;
         }
-
+        
         /// <summary>
         /// Get energy as normalized value (0-1)
         /// </summary>
@@ -244,7 +244,7 @@ namespace MechSalvager.Player
         {
             return EnergyPercent;
         }
-
+        
         /// <summary>
         /// Debug visualization using the GroundDetector's gizmos
         /// </summary>
@@ -252,21 +252,21 @@ namespace MechSalvager.Player
         {
             // The individual systems handle their own gizmo drawing
             // This maintains the same visual debugging as the original
-
-#if UNITY_EDITOR
-        // Show system status in scene view
-        if (enableDebugLogs)
-        {
-            string systemStatus = $"Systems Status:\n" +
-                                $"Movement: {(movementController != null ? "✓" : "✗")}\n" +
-                                $"Energy: {(energySystem != null ? "✓" : "✗")}\n" +
-                                $"Ground: {(groundDetector != null ? "✓" : "✗")}\n" +
-                                $"Dash: {(dashSystem != null ? "✓" : "✗")}\n" +
-                                $"Jump: {(jumpSystem != null ? "✓" : "✗")}";
             
-            UnityEditor.Handles.Label(transform.position + Vector3.up * 2f, systemStatus);
-        }
-#endif
+            #if UNITY_EDITOR
+            // Show system status in scene view
+            if (enableDebugLogs)
+            {
+                string systemStatus = $"Systems Status:\n" +
+                                    $"Movement: {(movementController != null ? "✓" : "✗")}\n" +
+                                    $"Energy: {(energySystem != null ? "✓" : "✗")}\n" +
+                                    $"Ground: {(groundDetector != null ? "✓" : "✗")}\n" +
+                                    $"Dash: {(dashSystem != null ? "✓" : "✗")}\n" +
+                                    $"Jump: {(jumpSystem != null ? "✓" : "✗")}";
+                
+                UnityEditor.Handles.Label(transform.position + Vector3.up * 2f, systemStatus);
+            }
+            #endif
         }
     }
 }
