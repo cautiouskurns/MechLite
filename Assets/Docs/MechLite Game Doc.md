@@ -1336,3 +1336,17 @@ public interface IWeapon
 - Rigidbody2D with appropriate mass and drag
 - BoxCollider2D for collisions
 - LayerMask system for ground detection
+
+
+
+---
+# 🧭 Notes
+
+**Ideas**
+- Automate prefab creation
+- Unit tests more periodically
+- Automated playing of game to test
+- Refactor at end of each phase
+- Apply best in class design patterns at end of each phase
+- Specify formats for milestones and tasks
+- Specify prompts  

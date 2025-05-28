@@ -349,12 +349,17 @@ MonoBehaviour:
   coyoteTime: 0.15
   jumpBufferTime: 0.1
   jumpForce: 10
-  dashForce: 15
+  maxEnergy: 100
+  currentEnergy: 100
+  dashEnergyCost: 25
+  energyRegenRate: 20
+  dashForce: 100
+  dashCooldown: 1
   groundLayerMask:
     serializedVersion: 2
     m_Bits: 256
   groundCheckDistance: 0.2
-  enableDebugLogs: 1
+  enableDebugLogs: 0
 --- !u!1 &1101558981
 GameObject:
   m_ObjectHideFlags: 0
