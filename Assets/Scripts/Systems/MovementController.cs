@@ -64,7 +64,7 @@ namespace MechSalvager.Movement
         /// <summary>
         /// Apply movement physics in FixedUpdate
         /// </summary>
-        public void Move()
+        public void Move(float deltaTime)
         {
             if (movementConfig == null) return;
             
@@ -102,9 +102,9 @@ namespace MechSalvager.Movement
         /// <summary>
         /// Apply jump force
         /// </summary>
-        public void Jump()
+        public bool Jump()
         {
-            if (movementConfig == null) return;
+            if (movementConfig == null) return false;
             
             rb2d.linearVelocity = new Vector2(rb2d.linearVelocity.x, movementConfig.jumpForce);
             
@@ -112,6 +112,7 @@ namespace MechSalvager.Movement
             {
                 Debug.Log($"MovementController: Jump executed with force {movementConfig.jumpForce}");
             }
+            return true;
         }
         
         /// <summary>

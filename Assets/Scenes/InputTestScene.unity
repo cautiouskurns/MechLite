@@ -178,6 +178,11 @@ GameObject:
   - component: {fileID: 1031944749}
   - component: {fileID: 1031944748}
   - component: {fileID: 1031944752}
+  - component: {fileID: 1031944757}
+  - component: {fileID: 1031944756}
+  - component: {fileID: 1031944755}
+  - component: {fileID: 1031944754}
+  - component: {fileID: 1031944753}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -343,24 +348,84 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c9870ace5ddf24bbdb53a4d6332e2d43, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
-  moveSpeed: 5
-  acceleration: 10
-  deceleration: 10
-  jumpForce: 7
-  coyoteTime: 0.15
-  jumpBufferTime: 0.1
-  dashForce: 35
-  dashCooldown: 1
-  maxEnergy: 100
-  currentEnergy: 100
-  dashEnergyCost: 25
-  energyRegenRate: 20
-  groundLayerMask:
-    serializedVersion: 2
-    m_Bits: 256
-  groundCheckDistance: 0.2
+  movementController: {fileID: 1031944757}
+  energySystem: {fileID: 1031944753}
+  groundDetector: {fileID: 1031944756}
+  dashSystem: {fileID: 1031944754}
+  jumpSystem: {fileID: 1031944755}
   enableDebugLogs: 0
   enableRuntimeTuning: 0
+--- !u!114 &1031944753
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1031944746}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 019389cde32be47b1a2e623e864be53c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MechSalvager.Energy.EnergySystem
+  energyConfig: {fileID: 11400000, guid: 9e71cd6dce6924125bb70a26e6386a2b, type: 2}
+  enableDebugLogs: 0
+--- !u!114 &1031944754
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1031944746}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: abd62e1b37a754bf5963d8b7d50a4ddc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MechSalvager.Movement.DashSystem
+  dashConfig: {fileID: 11400000, guid: 96df0abcc288049e09e6732fb0c05bdd, type: 2}
+  enableDebugLogs: 0
+--- !u!114 &1031944755
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1031944746}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b21420f469f44a40b89c24e56d64f66, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MechSalvager.Movement.JumpSystem
+  movementConfig: {fileID: 11400000, guid: 9ec1b9d7dd4dd402db5f2db29a410585, type: 2}
+  enableDebugLogs: 0
+--- !u!114 &1031944756
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1031944746}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec3a2eebdb36648a087685c114338166, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MechSalvager.Movement.GroundDetector
+  physicsConfig: {fileID: 11400000, guid: 6015bd208315d426aaa6821a76c36fdf, type: 2}
+  movementConfig: {fileID: 11400000, guid: 9ec1b9d7dd4dd402db5f2db29a410585, type: 2}
+  enableDebugLogs: 0
+--- !u!114 &1031944757
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1031944746}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c705bc188d85c4db5abfbc396635e4ab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MechSalvager.Movement.MovementController
+  movementConfig: {fileID: 11400000, guid: 9ec1b9d7dd4dd402db5f2db29a410585, type: 2}
+  enableDebugLogs: 0
 --- !u!1 &1101558981
 GameObject:
   m_ObjectHideFlags: 0

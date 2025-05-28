@@ -132,7 +132,7 @@ namespace MechSalvager.Movement
         private float GetDashEnergyCost()
         {
             // Try to get cost from energy config, fallback to dash config if available
-            var energyConfig = FindObjectOfType<EnergySystem>()?.GetComponent<EnergySystem>();
+            var energyConfig = FindAnyObjectByType<EnergySystem>()?.GetComponent<EnergySystem>();
             if (energyConfig != null)
             {
                 // This would require accessing the config - for now use default
