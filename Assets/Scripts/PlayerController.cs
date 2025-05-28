@@ -6,31 +6,55 @@ using UnityEngine;
 /// </summary>
 public class PlayerController : MonoBehaviour
 {
-    [Header("Movement Settings")]
-    [SerializeField] private float moveSpeed = 5f;
-    [SerializeField] private float acceleration = 10f; // How quickly we reach max speed
-    [SerializeField] private float deceleration = 10f; // How quickly we stop
-    [Header("Jump Settings")]
-    [SerializeField] private float coyoteTime = 0.15f; // Grace period after leaving ground
-    [SerializeField] private float jumpBufferTime = 0.1f; // Input buffer for jump
-    [SerializeField] private float jumpForce = 10f;
+    // BASELINE VALUES (tested feel):
+    // moveSpeed = 5f (responsive but not twitchy)
+    // jumpForce = 8f (weighty arc, good height)
+    // dashForce = 18f (satisfying burst without being overpowered)
+    // dashEnergyCost = 25f (allows 4 dashes at full energy)
+    // energyRegenRate = 20f (5 seconds to fully regenerate)
     
-    [Header("Energy System")]
-    [SerializeField] private float maxEnergy = 100f;
-    [SerializeField] private float currentEnergy = 100f;
-    [SerializeField] private float dashEnergyCost = 25f;
-    [SerializeField] private float energyRegenRate = 20f; // energy per second
+    [Header("Movement Settings")]
+    [SerializeField, Range(1f, 10f), Tooltip("Maximum horizontal movement speed")]
+    private float moveSpeed = 5f;
+    [SerializeField, Range(5f, 25f), Tooltip("How quickly we reach max speed")]
+    private float acceleration = 10f;
+    [SerializeField, Range(5f, 25f), Tooltip("How quickly we stop when no input")]
+    private float deceleration = 10f;
+    
+    [Header("Jump Settings")]
+    [SerializeField, Range(5f, 20f), Tooltip("Upward force applied when jumping")]
+    private float jumpForce = 8f;
+    [SerializeField, Range(0.05f, 0.3f), Tooltip("Grace period after leaving ground")]
+    private float coyoteTime = 0.15f;
+    [SerializeField, Range(0.05f, 0.2f), Tooltip("Input buffer window for jump")]
+    private float jumpBufferTime = 0.1f;
     
     [Header("Dash System")]
-    [SerializeField] private float dashForce = 25f;
-    [SerializeField] private float dashCooldown = 0.5f;
+    [SerializeField, Range(10f, 35f), Tooltip("Horizontal force applied when dashing")]
+    private float dashForce = 18f;
+    [SerializeField, Range(0.1f, 2f), Tooltip("Cooldown between dashes")]
+    private float dashCooldown = 0.5f;
     
-    [Header("Ground Detection")]
-    [SerializeField] private LayerMask groundLayerMask = 1 << 8; // Layer 8 for Ground
-    [SerializeField] private float groundCheckDistance = 0.2f; // Increased for testing
+    [Header("Energy System")]
+    [SerializeField, Range(50f, 200f), Tooltip("Maximum energy capacity")]
+    private float maxEnergy = 100f;
+    [SerializeField] private float currentEnergy = 100f;
+    [SerializeField, Range(10f, 50f), Tooltip("Energy cost for dash")]
+    private float dashEnergyCost = 25f;
+    [SerializeField, Range(10f, 50f), Tooltip("Energy regenerated per second")]
+    private float energyRegenRate = 20f;
     
-    [Header("Debug")]
-    [SerializeField] private bool enableDebugLogs = true; // Enabled for testing
+    [Header("Physics Settings")]
+    [SerializeField, Tooltip("Layers considered as ground for collision detection")]
+    private LayerMask groundLayerMask = 1 << 8; // Layer 8 for Ground
+    [SerializeField, Range(0.1f, 0.5f), Tooltip("How far to check for ground below player")]
+    private float groundCheckDistance = 0.2f;
+    
+    [Header("Debug Controls")]
+    [SerializeField, Tooltip("Enable comprehensive debug logging")]
+    private bool enableDebugLogs = true;
+    [SerializeField, Tooltip("Allow runtime parameter adjustment in editor")]
+    private bool enableRuntimeTuning = false;
     
     // Component references
     private Rigidbody2D rb2d;
@@ -57,6 +81,9 @@ public class PlayerController : MonoBehaviour
     {
         Debug.Log("=== PLAYERCONTROLLER START METHOD CALLED ===");
         
+        // Ensure energy starts at max
+        currentEnergy = maxEnergy;
+        
         // Get component references
         rb2d = GetComponent<Rigidbody2D>();
         boxCollider = GetComponent<BoxCollider2D>();
@@ -78,8 +105,26 @@ public class PlayerController : MonoBehaviour
             Debug.LogError("PlayerController: SpriteRenderer component missing!");
         }
         
+        // Validate parameters
+        if (dashEnergyCost > maxEnergy)
+        {
+            Debug.LogWarning($"PlayerController: Dash energy cost ({dashEnergyCost}) exceeds max energy ({maxEnergy})!");
+        }
+        
+        if (jumpForce < 5f)
+        {
+            Debug.LogWarning($"PlayerController: Jump force ({jumpForce}) may be too low for satisfying jumps!");
+        }
+        
+        if (dashForce < moveSpeed)
+        {
+            Debug.LogWarning($"PlayerController: Dash force ({dashForce}) is less than move speed ({moveSpeed}) - dash may not feel impactful!");
+        }
+        
         Debug.Log($"PlayerController: Jump force set to {jumpForce}");
+        Debug.Log($"PlayerController: Dash force set to {dashForce}");
         Debug.Log($"PlayerController: Ground check distance set to {groundCheckDistance}");
+        Debug.Log($"PlayerController: Energy system - Max: {maxEnergy}, Cost: {dashEnergyCost}, Regen: {energyRegenRate}/sec");
         
         // Set initial sprite direction (face right)
         if (spriteRenderer != null)
@@ -89,12 +134,25 @@ public class PlayerController : MonoBehaviour
         
         if (enableDebugLogs)
         {
-            Debug.Log("PlayerController: Initialized successfully");
+            Debug.Log("PlayerController: Initialized successfully with tuned parameters");
         }
     }
     
     void Update()
     {
+        // Runtime parameter tuning support for editor testing
+        if (enableRuntimeTuning && Application.isEditor)
+        {
+            // Ensure energy doesn't exceed max if max was changed
+            currentEnergy = Mathf.Min(currentEnergy, maxEnergy);
+            
+            // Validate parameters in real-time
+            if (dashEnergyCost > maxEnergy)
+            {
+                Debug.LogWarning($"Runtime Warning: Dash cost ({dashEnergyCost}) > Max energy ({maxEnergy})");
+            }
+        }
+        
         // Read input using the input system we set up in T1.1.1
         ReadInput();
         
@@ -136,7 +194,7 @@ public class PlayerController : MonoBehaviour
         // Use the input system configured in T1.1.1
         horizontalInput = Input.GetAxis("Horizontal");
         jumpInput = Input.GetKeyDown(KeyCode.Space);
-        dashInput = Input.GetKeyDown(KeyCode.LeftShift);
+        dashInput = Input.GetKeyDown(KeyCode.E); // Updated to E key for dash
         
         // Track jump input timing for buffering
         if (jumpInput)
