@@ -1,8 +1,8 @@
 using UnityEngine;
-using MechSalvager.Configuration;
-using MechSalvager.Events;
+using MechLite.Configuration;
+using MechLite.Events;
 
-namespace MechSalvager.Energy
+namespace MechLite.Energy
 {
     /// <summary>
     /// Manages energy for the player character

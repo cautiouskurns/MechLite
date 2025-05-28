@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace MechSalvager.Events
+namespace MechLite.Events
 {
     /// <summary>
     /// Simple event system for decoupled communication between player systems

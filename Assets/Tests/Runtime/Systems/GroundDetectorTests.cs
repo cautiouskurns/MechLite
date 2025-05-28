@@ -3,8 +3,8 @@ using UnityEngine;
 using UnityEngine.TestTools;
 using System.Collections;
 using MechLite.Tests.Utilities;
-using MechSalvager.Movement;
-using MechSalvager.Configuration;
+using MechLite.Movement;
+using MechLite.Configuration;
 
 namespace MechLite.Tests.Systems
 {

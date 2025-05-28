@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using MechSalvager.Events;
 
 namespace MechLite.Tests.Utilities
 {
@@ -22,23 +23,20 @@ namespace MechLite.Tests.Utilities
 
         public void Subscribe()
         {
-            PlayerEventBus.Instance.OnPlayerMoved += OnPlayerMoved;
-            PlayerEventBus.Instance.OnPlayerJumped += OnPlayerJumped;
-            PlayerEventBus.Instance.OnPlayerDashed += OnPlayerDashed;
-            PlayerEventBus.Instance.OnEnergyChanged += OnEnergyChanged;
-            PlayerEventBus.Instance.OnGroundStateChanged += OnGroundStateChanged;
+            PlayerEventBus.OnPlayerMoved += OnPlayerMoved;
+            PlayerEventBus.OnPlayerJumped += OnPlayerJumped;
+            PlayerEventBus.OnPlayerDashed += OnPlayerDashed;
+            PlayerEventBus.OnEnergyChanged += OnEnergyChanged;
+            PlayerEventBus.OnGroundStateChanged += OnGroundStateChanged;
         }
 
         public void Unsubscribe()
         {
-            if (PlayerEventBus.Instance != null)
-            {
-                PlayerEventBus.Instance.OnPlayerMoved -= OnPlayerMoved;
-                PlayerEventBus.Instance.OnPlayerJumped -= OnPlayerJumped;
-                PlayerEventBus.Instance.OnPlayerDashed -= OnPlayerDashed;
-                PlayerEventBus.Instance.OnEnergyChanged -= OnEnergyChanged;
-                PlayerEventBus.Instance.OnGroundStateChanged -= OnGroundStateChanged;
-            }
+            PlayerEventBus.OnPlayerMoved -= OnPlayerMoved;
+            PlayerEventBus.OnPlayerJumped -= OnPlayerJumped;
+            PlayerEventBus.OnPlayerDashed -= OnPlayerDashed;
+            PlayerEventBus.OnEnergyChanged -= OnEnergyChanged;
+            PlayerEventBus.OnGroundStateChanged -= OnGroundStateChanged;
         }
 
         public void Clear()

@@ -1,4 +1,5 @@
 using UnityEngine;
+using MechLite.Movement;
 
 namespace MechLite.Tests.Mocks
 {
@@ -13,19 +14,18 @@ namespace MechLite.Tests.Mocks
         public Vector2 Velocity => velocity;
         public bool IsGrounded => isGrounded;
 
-        public void Move(Vector2 direction, float deltaTime)
+        public void Move(float horizontalInput)
         {
             // Mock implementation - just store the movement data
-            LastMoveDirection = direction;
-            LastMoveDeltaTime = deltaTime;
+            LastHorizontalInput = horizontalInput;
             MoveCallCount++;
         }
 
-        public void Jump(float force)
+        public bool Jump()
         {
-            LastJumpForce = force;
             JumpCallCount++;
-            velocity = new Vector2(velocity.x, force);
+            velocity = new Vector2(velocity.x, 10f); // Mock jump force
+            return true;
         }
 
         public void SetVelocity(Vector2 newVelocity)
@@ -36,9 +36,7 @@ namespace MechLite.Tests.Mocks
         }
 
         // Test utilities for verification
-        public Vector2 LastMoveDirection { get; private set; }
-        public float LastMoveDeltaTime { get; private set; }
-        public float LastJumpForce { get; private set; }
+        public float LastHorizontalInput { get; private set; }
         public Vector2 LastSetVelocity { get; private set; }
         public int MoveCallCount { get; private set; }
         public int JumpCallCount { get; private set; }

@@ -1,4 +1,5 @@
 using UnityEngine;
+using MechLite.Movement;
 
 namespace MechLite.Tests.Mocks
 {
@@ -13,7 +14,7 @@ namespace MechLite.Tests.Mocks
         public bool CanDash => canDash;
         public float DashCooldownRemaining => dashCooldownRemaining;
 
-        public bool Dash(Vector2 direction)
+        public bool Dash(float direction)
         {
             if (!CanDash) return false;
 
@@ -37,7 +38,7 @@ namespace MechLite.Tests.Mocks
         }
 
         // Test utilities
-        public Vector2 LastDashDirection { get; private set; }
+        public float LastDashDirection { get; private set; }
         public int DashCallCount { get; private set; }
 
         public void SetCanDash(bool canDashValue) => canDash = canDashValue;

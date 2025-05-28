@@ -1,9 +1,9 @@
 using UnityEngine;
-using MechSalvager.Movement;
-using MechSalvager.Energy;
-using MechSalvager.Events;
+using MechLite.Movement;
+using MechLite.Energy;
+using MechLite.Events;
 
-namespace MechSalvager.Player
+namespace MechLite.Player
 {
     /// <summary>
     /// Refactored PlayerController that acts as a coordinator for player systems

@@ -3,7 +3,8 @@
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "MechLite.Tests"
+        "MechLite.Tests",
+        "MechLite"
     ],
     "includePlatforms": [
         "Editor"

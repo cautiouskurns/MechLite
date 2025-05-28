@@ -4,6 +4,8 @@ using UnityEngine.TestTools;
 using System.Collections;
 using MechLite.Tests.Utilities;
 using MechLite.Tests.Mocks;
+using MechLite.Movement;
+using MechLite.Configuration;
 
 namespace MechLite.Tests.Systems
 {

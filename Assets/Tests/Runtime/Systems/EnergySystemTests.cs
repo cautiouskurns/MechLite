@@ -3,6 +3,9 @@ using UnityEngine;
 using UnityEngine.TestTools;
 using System.Collections;
 using MechLite.Tests.Utilities;
+using MechLite.Energy;
+using MechLite.Tests.Mocks;
+
 
 namespace MechLite.Tests.Systems
 {

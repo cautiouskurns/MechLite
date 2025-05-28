@@ -1,9 +1,9 @@
 using UnityEngine;
-using MechSalvager.Configuration;
-using MechSalvager.Events;
-using MechSalvager.Energy;
+using MechLite.Configuration;
+using MechLite.Events;
+using MechLite.Energy;
 
-namespace MechSalvager.Movement
+namespace MechLite.Movement
 {
     /// <summary>
     /// Handles dash mechanics for the player character

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace MechSalvager.Movement
+namespace MechLite.Movement
 {
     /// <summary>
     /// Interface for ground detection and coyote time mechanics

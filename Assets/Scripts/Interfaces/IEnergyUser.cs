@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace MechSalvager.Energy
+namespace MechLite.Energy
 {
     /// <summary>
     /// Interface for systems that manage and consume energy

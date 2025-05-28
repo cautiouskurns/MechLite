@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace MechSalvager.Configuration
+namespace MechLite.Configuration
 {
     /// <summary>
     /// ScriptableObject configuration for physics and collision detection

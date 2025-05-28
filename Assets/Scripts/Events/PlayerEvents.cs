@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace MechSalvager.Events
+namespace MechLite.Events
 {
     /// <summary>
     /// Event data for player movement actions

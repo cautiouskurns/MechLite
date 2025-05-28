@@ -1,7 +1,12 @@
 using NUnit.Framework;
 using UnityEngine;
 using MechLite.Tests.Utilities;
-using MechSalvager.Configuration;
+using MechLite.Configuration;
+using MechLite.Tests.Mocks;
+using MechLite.Movement;
+using UnityEditor;
+using MechLite.Energy;
+
 
 namespace MechLite.Tests.Editor
 {

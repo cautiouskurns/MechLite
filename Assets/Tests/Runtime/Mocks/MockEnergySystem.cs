@@ -1,4 +1,5 @@
 using UnityEngine;
+using MechSalvager.Energy;
 
 namespace MechLite.Tests.Mocks
 {
@@ -24,9 +25,9 @@ namespace MechLite.Tests.Mocks
             return true;
         }
 
-        public void RegenerateEnergy(float amount)
+        public void RegenerateEnergy()
         {
-            currentEnergy = Mathf.Min(maxEnergy, currentEnergy + amount);
+            // Mock implementation - no automatic regeneration in mock
         }
 
         // Test utilities

@@ -1,8 +1,8 @@
 using UnityEngine;
-using MechSalvager.Configuration;
-using MechSalvager.Events;
+using MechLite.Configuration;
+using MechLite.Events;
 
-namespace MechSalvager.Movement
+namespace MechLite.Movement
 {
     /// <summary>
     /// Handles jump mechanics including coyote time and jump buffering
