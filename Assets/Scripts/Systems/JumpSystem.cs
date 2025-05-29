@@ -23,6 +23,7 @@ namespace MechLite.Movement
         
         // Jump state
         private float lastJumpInputTime = -1f;
+        private bool jumpAttemptedForCurrentInput = false;
         
         /// <summary>
         /// Initialize the jump system with configuration and component references
@@ -58,7 +59,7 @@ namespace MechLite.Movement
         }
         
         /// <summary>
-        /// Process jump input and attempt to execute jump
+        /// Process jump input (just records the input timing)
         /// </summary>
         /// <param name="jumpInput">Whether jump was pressed this frame</param>
         public void ProcessJumpInput(bool jumpInput)
@@ -67,15 +68,26 @@ namespace MechLite.Movement
             if (jumpInput)
             {
                 lastJumpInputTime = Time.time;
+                jumpAttemptedForCurrentInput = false; // Reset attempt flag for new input
                 
                 if (enableDebugLogs)
                 {
                     Debug.Log($"JumpSystem: Jump input detected at {Time.time}");
                 }
             }
-            
-            // Attempt to execute jump
-            TryExecuteJump();
+        }
+        
+        /// <summary>
+        /// Update jump system - should be called every frame to process pending jump attempts
+        /// </summary>
+        public void UpdateJumpSystem()
+        {
+            // Attempt to execute jump if we have recent input and haven't tried yet
+            if (HasRecentJumpInput() && !jumpAttemptedForCurrentInput)
+            {
+                jumpAttemptedForCurrentInput = true; // Mark that we've attempted for this input
+                TryExecuteJump();
+            }
         }
         
         /// <summary>
@@ -124,6 +136,7 @@ namespace MechLite.Movement
             
             // Clear the jump input buffer
             lastJumpInputTime = 0f;
+            jumpAttemptedForCurrentInput = false; // Reset for next input
             
             // Determine if coyote time was used
             bool usedCoyoteTime = !groundDetector.IsGrounded && usedGroundAction;

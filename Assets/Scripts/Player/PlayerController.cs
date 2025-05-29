@@ -125,7 +125,11 @@ namespace MechLite.Player
         {
             if (jumpSystem != null)
             {
+                // Process input
                 jumpSystem.ProcessJumpInput(jumpInput);
+                
+                // Update jump system to process pending jump attempts
+                jumpSystem.UpdateJumpSystem();
             }
         }
 
