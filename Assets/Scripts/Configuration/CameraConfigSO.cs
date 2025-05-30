@@ -21,6 +21,11 @@ namespace MechLite.Configuration
         [Header("Deadzone Settings")]
         [Range(0f, 3f)] public float deadZoneSize = 0.5f;
         
+        [Header("Camera Bounds")]
+        public bool useBounds = false;
+        public Vector2 boundsMin = new Vector2(-10f, -5f);
+        public Vector2 boundsMax = new Vector2(10f, 5f);
+        
         [Header("Debug")]
         public bool showDeadZoneGizmo = true;
         public bool enableDebugLogs = false;
@@ -31,13 +36,23 @@ namespace MechLite.Configuration
                 Debug.LogWarning($"CameraConfig: Z offset should be negative for 2D!");
             if (!followX && !followY && !followZ)
                 Debug.LogWarning($"CameraConfig: At least one axis should be enabled!");
+            
+            // Validate bounds
+            if (useBounds)
+            {
+                if (boundsMin.x >= boundsMax.x)
+                    Debug.LogWarning($"CameraConfig: Bounds min X should be less than max X!");
+                if (boundsMin.y >= boundsMax.y)
+                    Debug.LogWarning($"CameraConfig: Bounds min Y should be less than max Y!");
+            }
         }
         
         public string GetConfigDescription()
         {
             string method = useSmoothDamp ? $"SmoothDamp ({smoothTime:F1}s)" : $"Lerp ({followSpeed:F1})";
             string axes = $"{(followX ? "X" : "")}{(followY ? "Y" : "")}{(followZ ? "Z" : "")}";
-            return $"{method}, Axes: {axes}, DeadZone: {deadZoneSize:F1}";
+            string bounds = useBounds ? $"Bounds: ({boundsMin.x:F1},{boundsMin.y:F1}) to ({boundsMax.x:F1},{boundsMax.y:F1})" : "No Bounds";
+            return $"{method}, Axes: {axes}, DeadZone: {deadZoneSize:F1}, {bounds}";
         }
     }
 }

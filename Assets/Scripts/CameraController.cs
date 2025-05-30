@@ -34,6 +34,7 @@ public class CameraController : MonoBehaviour
         if (player != null)
         {
             transform.position = player.position + cameraConfig.offset;
+            ApplyBounds();
             if (cameraConfig.enableDebugLogs)
                 Debug.Log($"CameraController: Initialized with config '{cameraConfig.name}'");
         }
@@ -58,12 +59,25 @@ public class CameraController : MonoBehaviour
             transform.position = Vector3.SmoothDamp(transform.position, targetPos, ref dampVelocity, cameraConfig.smoothTime);
         else
             transform.position = Vector3.Lerp(transform.position, targetPos, cameraConfig.followSpeed * Time.deltaTime);
+        
+        ApplyBounds();
+    }
+    
+    private void ApplyBounds()
+    {
+        if (cameraConfig == null || !cameraConfig.useBounds) return;
+        
+        Vector3 pos = transform.position;
+        pos.x = Mathf.Clamp(pos.x, cameraConfig.boundsMin.x, cameraConfig.boundsMax.x);
+        pos.y = Mathf.Clamp(pos.y, cameraConfig.boundsMin.y, cameraConfig.boundsMax.y);
+        transform.position = pos;
     }
     
     public void SetConfiguration(CameraConfigSO newConfig)
     {
         cameraConfig = newConfig;
         dampVelocity = Vector3.zero;
+        ApplyBounds();
     }
     
     public CameraConfigSO GetConfiguration() { return cameraConfig; }
@@ -76,29 +90,67 @@ public class CameraController : MonoBehaviour
         return Vector3.Distance(cameraWorldPos, player.position) < cameraConfig.deadZoneSize;
     }
     
+    public bool IsCameraAtBounds()
+    {
+        if (cameraConfig == null || !cameraConfig.useBounds) return false;
+        Vector3 pos = transform.position;
+        return Mathf.Approximately(pos.x, cameraConfig.boundsMin.x) ||
+               Mathf.Approximately(pos.x, cameraConfig.boundsMax.x) ||
+               Mathf.Approximately(pos.y, cameraConfig.boundsMin.y) ||
+               Mathf.Approximately(pos.y, cameraConfig.boundsMax.y);
+    }
+    
     public void SnapToTarget()
     {
         if (player != null && cameraConfig != null)
         {
             transform.position = player.position + cameraConfig.offset;
+            ApplyBounds();
             dampVelocity = Vector3.zero;
         }
     }
     
     private void OnDrawGizmos()
     {
-        if (player == null || cameraConfig == null) return;
+        if (cameraConfig == null) return;
         
-        Gizmos.color = Color.cyan;
-        Gizmos.DrawLine(transform.position, player.position);
+        if (player != null)
+        {
+            Gizmos.color = Color.cyan;
+            Gizmos.DrawLine(transform.position, player.position);
+        }
         
-        if (cameraConfig.showDeadZoneGizmo && cameraConfig.deadZoneSize > 0f)
+        if (player != null && cameraConfig.showDeadZoneGizmo && cameraConfig.deadZoneSize > 0f)
         {
             Vector3 deadZoneCenter = transform.position - cameraConfig.offset;
             bool playerInDeadZone = IsPlayerInDeadZone();
             
             Gizmos.color = playerInDeadZone ? Color.green : Color.red;
             Gizmos.DrawWireSphere(deadZoneCenter, cameraConfig.deadZoneSize);
+        }
+        
+        if (cameraConfig.useBounds)
+        {
+            Vector3 boundsCenter = new Vector3(
+                (cameraConfig.boundsMin.x + cameraConfig.boundsMax.x) / 2f,
+                (cameraConfig.boundsMin.y + cameraConfig.boundsMax.y) / 2f,
+                transform.position.z
+            );
+            
+            Vector3 boundsSize = new Vector3(
+                cameraConfig.boundsMax.x - cameraConfig.boundsMin.x,
+                cameraConfig.boundsMax.y - cameraConfig.boundsMin.y,
+                1f
+            );
+            
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawWireCube(boundsCenter, boundsSize);
+            
+            if (IsCameraAtBounds())
+            {
+                Gizmos.color = Color.red;
+                Gizmos.DrawWireSphere(transform.position, 0.3f);
+            }
         }
     }
 }
