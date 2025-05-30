@@ -6,8 +6,7 @@ using MechLite.Energy;
 namespace MechLite.Movement
 {
     /// <summary>
-    /// Handles jump mechanics including coyote time and jump buffering
-    /// Works with MovementController and GroundDetector for jump execution
+    /// Dead simple jump system: Grounded + Space = Jump. That's it.
     /// </summary>
     public class JumpSystem : MonoBehaviour
     {
@@ -15,26 +14,16 @@ namespace MechLite.Movement
         [SerializeField] private MovementConfigSO movementConfig;
         
         [Header("Debug")]
-        [SerializeField] private bool enableDebugLogs = false;
+        [SerializeField] private bool enableDebugLogs = true; // Enable by default for debugging
         
         // Component references
         private IMovable movementController;
         private IGroundDetector groundDetector;
         
-        // Jump state
-        private float lastJumpInputTime = -1f;
-        private bool jumpAttemptedForCurrentInput = false;
-        
-        /// <summary>
-        /// Initialize the jump system with configuration and component references
-        /// Used by tests and programmatic setup
-        /// </summary>
         public void Initialize(PhysicsConfigSO physicsConfig, EnergyConfigSO energyConfig, IMovable movable, IGroundDetector detector, IEnergyUser energy)
         {
-            // JumpSystem uses MovementConfigSO, but we'll accept the physics config for compatibility
             movementController = movable;
             groundDetector = detector;
-            // Energy system is not directly used by JumpSystem in current implementation
         }
         
         private void Awake()
@@ -43,181 +32,91 @@ namespace MechLite.Movement
             groundDetector = GetComponent<IGroundDetector>();
             
             if (movementConfig == null)
-            {
                 Debug.LogError("JumpSystem: MovementConfigSO is not assigned!");
-            }
-            
             if (movementController == null)
-            {
                 Debug.LogError("JumpSystem: IMovable component not found!");
-            }
-            
             if (groundDetector == null)
-            {
                 Debug.LogError("JumpSystem: IGroundDetector component not found!");
-            }
         }
         
         /// <summary>
-        /// Process jump input (just records the input timing)
+        /// Process jump input - if space pressed and grounded, jump immediately
         /// </summary>
-        /// <param name="jumpInput">Whether jump was pressed this frame</param>
-        public void ProcessJumpInput(bool jumpInput)
+        public void ProcessJumpInput(bool jumpPressed)
         {
-            // Track jump input timing for buffering
-            if (jumpInput)
-            {
-                lastJumpInputTime = Time.time;
-                jumpAttemptedForCurrentInput = false; // Reset attempt flag for new input
+            if (enableDebugLogs)
+                Debug.Log($"JumpSystem: ProcessJumpInput - Space pressed: {jumpPressed}, Grounded: {groundDetector?.IsGrounded}, CanJump: {CanJump()}");
                 
+            if (jumpPressed && CanJump())
+            {
+                ExecuteJump();
+            }
+            else if (jumpPressed && !CanJump())
+            {
                 if (enableDebugLogs)
-                {
-                    Debug.Log($"JumpSystem: Jump input detected at {Time.time}");
-                }
+                    Debug.Log($"JumpSystem: Jump input ignored - not grounded (IsGrounded: {groundDetector?.IsGrounded})");
             }
         }
         
         /// <summary>
-        /// Update jump system - should be called every frame to process pending jump attempts
+        /// Not needed anymore - we jump immediately when space is pressed
         /// </summary>
         public void UpdateJumpSystem()
         {
-            // Attempt to execute jump if we have recent input and haven't tried yet
-            if (HasRecentJumpInput() && !jumpAttemptedForCurrentInput)
-            {
-                jumpAttemptedForCurrentInput = true; // Mark that we've attempted for this input
-                TryExecuteJump();
-            }
+            // Nothing to do - we handle jumps immediately in ProcessJumpInput
         }
         
         /// <summary>
-        /// Try to execute a jump based on current conditions
+        /// Check if we can jump right now
         /// </summary>
-        public void TryExecuteJump()
+        public bool CanJump()
         {
-            if (movementConfig == null || movementController == null || groundDetector == null) return;
+            bool grounded = groundDetector?.IsGrounded ?? false;
+            if (enableDebugLogs)
+                Debug.Log($"JumpSystem CanJump: {grounded}");
+            return grounded;
+        }
+        
+        /// <summary>
+        /// Execute the jump
+        /// </summary>
+        private void ExecuteJump()
+        {
+            if (movementController == null) return;
             
-            // Check if we can jump using coyote time and ground detection
-            bool canJumpGrounded = groundDetector.CanPerformGroundAction();
-            bool hasRecentJumpInput = HasRecentJumpInput();
+            // Jump!
+            movementController.Jump();
             
-            // Only jump if we have recent input and can perform ground action
-            if (hasRecentJumpInput && canJumpGrounded)
+            // Publish event
+            PlayerEventBus.PublishPlayerJumped(new PlayerJumpedEvent(
+                movementController.Velocity,
+                transform.position,
+                false, // not using coyote time for now
+                false  // not using jump buffer for now
+            ));
+            
+            if (enableDebugLogs)
             {
-                ExecuteJump(canJumpGrounded, hasRecentJumpInput);
-            }
-            else if (enableDebugLogs && HasJumpInputThisFrame())
-            {
-                LogJumpFailureReason(canJumpGrounded);
+                Debug.Log($"JumpSystem: *** JUMP EXECUTED! *** Velocity after jump: {movementController.Velocity}");
             }
         }
         
         /// <summary>
         /// Force execute a jump (for external systems)
         /// </summary>
-        public void ForceJump()
+        public void TryExecuteJump()
         {
-            if (movementController != null)
+            if (CanJump())
             {
-                movementController.Jump();
-                PublishJumpEvent(false, false);
-                
-                if (enableDebugLogs)
-                {
-                    Debug.Log("JumpSystem: Force jump executed");
-                }
+                ExecuteJump();
+            }
+            else if (enableDebugLogs)
+            {
+                Debug.Log($"JumpSystem: TryExecuteJump failed - not grounded");
             }
         }
         
-        private void ExecuteJump(bool usedGroundAction, bool usedJumpBuffer)
-        {
-            // Execute the jump
-            movementController.Jump();
-            
-            // Clear the jump input buffer
-            lastJumpInputTime = 0f;
-            jumpAttemptedForCurrentInput = false; // Reset for next input
-            
-            // Determine if coyote time was used
-            bool usedCoyoteTime = !groundDetector.IsGrounded && usedGroundAction;
-            
-            // Publish jump event
-            PublishJumpEvent(usedCoyoteTime, usedJumpBuffer);
-            
-            if (enableDebugLogs)
-            {
-                Debug.Log($"JumpSystem: Jump executed - " +
-                         $"Grounded: {groundDetector.IsGrounded}, " +
-                         $"CoyoteTime: {usedCoyoteTime}, " +
-                         $"JumpBuffer: {usedJumpBuffer}, " +
-                         $"Force: {movementConfig.jumpForce}");
-            }
-        }
-        
-        private bool HasRecentJumpInput()
-        {
-            if (movementConfig == null) return false;
-            return Time.time - lastJumpInputTime < movementConfig.jumpBufferTime;
-        }
-        
-        private bool HasJumpInputThisFrame()
-        {
-            return Mathf.Abs(Time.time - lastJumpInputTime) < 0.01f;
-        }
-        
-        private void LogJumpFailureReason(bool canJumpGrounded)
-        {
-            if (!canJumpGrounded)
-            {
-                float timeSinceGrounded = groundDetector.IsGrounded ? 0f : 
-                    (movementConfig.coyoteTime - groundDetector.CoyoteTimeRemaining);
-                Debug.Log($"JumpSystem: Jump failed - Not grounded. Time since grounded: {timeSinceGrounded:F2}s, " +
-                         $"Coyote remaining: {groundDetector.CoyoteTimeRemaining:F2}s");
-            }
-            else
-            {
-                Debug.Log("JumpSystem: Jump failed - No recent input or other condition not met");
-            }
-        }
-        
-        private void PublishJumpEvent(bool usedCoyoteTime, bool usedJumpBuffer)
-        {
-            Vector2 jumpVelocity = movementController?.Velocity ?? Vector2.zero;
-            
-            PlayerEventBus.PublishPlayerJumped(new PlayerJumpedEvent(
-                jumpVelocity,
-                transform.position,
-                usedCoyoteTime,
-                usedJumpBuffer
-            ));
-        }
-        
-        /// <summary>
-        /// Get whether a jump can currently be performed
-        /// </summary>
-        /// <returns>True if jump is possible</returns>
-        public bool CanJump()
-        {
-            return groundDetector?.CanPerformGroundAction() ?? false;
-        }
-        
-        /// <summary>
-        /// Get remaining coyote time
-        /// </summary>
-        /// <returns>Coyote time remaining in seconds</returns>
-        public float GetCoyoteTimeRemaining()
-        {
-            return groundDetector?.CoyoteTimeRemaining ?? 0f;
-        }
-        
-        /// <summary>
-        /// Get remaining jump buffer time
-        /// </summary>
-        /// <returns>Jump buffer time remaining in seconds</returns>
-        public float GetJumpBufferTimeRemaining()
-        {
-            if (movementConfig == null) return 0f;
-            return Mathf.Max(0f, movementConfig.jumpBufferTime - (Time.time - lastJumpInputTime));
-        }
+        public float GetCoyoteTimeRemaining() => 0f; // Disabled for now
+        public float GetJumpBufferTimeRemaining() => 0f; // Disabled for now
     }
 }

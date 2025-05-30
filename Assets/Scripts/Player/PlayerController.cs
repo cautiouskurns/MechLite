@@ -89,6 +89,10 @@ namespace MechLite.Player
                 dashSystem.SetLastMoveDirection(moveDirection);
             }
 
+            // Process jump immediately in Update to match ground detection timing
+            // This fixes the timing mismatch between ground detection (Update) and jump processing (FixedUpdate)
+            HandleJump();
+
             // Debug logging
             if (enableDebugLogs)
             {
@@ -100,7 +104,6 @@ namespace MechLite.Player
         {
             // Delegate to systems in the correct order
             HandleMovement();
-            HandleJump();
             HandleDash();
         }
 

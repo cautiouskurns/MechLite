@@ -26,7 +26,7 @@ namespace MechLite.Configuration
         [SerializeField, Range(0.05f, 0.3f), Tooltip("Grace period after leaving ground")]
         public float coyoteTime = 0.15f;
         
-        [SerializeField, Range(0.05f, 0.2f), Tooltip("Input buffer window for jump")]
+        [SerializeField, Range(0.0f, 0.2f), Tooltip("Input buffer window for jump")]
         public float jumpBufferTime = 0.1f;
         
         [Header("Air Control")]

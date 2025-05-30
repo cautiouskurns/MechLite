@@ -17,6 +17,6 @@ MonoBehaviour:
   deceleration: 10
   jumpForce: 8
   coyoteTime: 0.15
-  jumpBufferTime: 0.1
+  jumpBufferTime: 0.2
   airControlStrength: 0.1
   clampGroundedVelocity: 1
