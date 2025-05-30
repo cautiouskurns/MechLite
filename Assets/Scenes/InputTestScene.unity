@@ -576,12 +576,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 92ae1c0a210b34ba1bd23082ef879509, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MechLite::CameraController
+  cameraConfig: {fileID: 11400000, guid: 259ba0ee292644c23808e57d644f7ea2, type: 2}
   player: {fileID: 1031944751}
-  offset: {x: 0, y: 0, z: -10}
-  followSpeed: 5
-  useSmoothDamp: 0
-  smoothTime: 0.3
-  enableDebugLogs: 0
 --- !u!1 &2094010546
 GameObject:
   m_ObjectHideFlags: 0
