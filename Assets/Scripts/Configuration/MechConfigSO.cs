@@ -25,6 +25,13 @@ namespace MechLite.Mech
         [SerializeField, Range(50f, 200f), Tooltip("Maximum energy capacity")]
         public float baseMaxEnergy = 100f;
         
+        [Header("Energy Management Settings")]
+        [SerializeField, Range(5f, 50f), Tooltip("Energy regenerated per second")]
+        public float energyRegenRate = 20f;
+        
+        [SerializeField, Range(0f, 5f), Tooltip("Delay in seconds before energy regeneration starts after consumption")]
+        public float energyRegenDelay = 1f;
+        
         [Header("Movement Stats")]
         [SerializeField, Range(1f, 15f), Tooltip("Base horizontal movement speed")]
         public float baseMoveSpeed = 5f;

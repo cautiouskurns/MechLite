@@ -26,11 +26,15 @@ namespace MechLite.Mech
         // Stats system
         private MechStats stats;
         
+        // Energy management system
+        private EnergyManager energyManager;
+        
         // Core state
         private bool isInitialized = false;
         
         // Public API
         public MechStats Stats => stats;
+        public EnergyManager Energy => energyManager;
         
         #region IMechControllable Implementation
         
@@ -50,6 +54,9 @@ namespace MechLite.Mech
             
             // Initialize stats system
             InitializeStats();
+            
+            // Initialize energy management system
+            InitializeEnergyManager();
             
             isInitialized = true;
             
@@ -75,6 +82,7 @@ namespace MechLite.Mech
             boxCollider = null;
             spriteRenderer = null;
             stats = null;
+            energyManager = null;
         }
         
         #endregion
@@ -105,6 +113,7 @@ namespace MechLite.Mech
             rb2d = GetComponent<Rigidbody2D>();
             boxCollider = GetComponent<BoxCollider2D>();
             spriteRenderer = GetComponent<SpriteRenderer>();
+            energyManager = GetComponent<EnergyManager>();
             
             if (enableDebugLogs)
                 Debug.Log("MechController: Component discovery completed");
@@ -132,6 +141,12 @@ namespace MechLite.Mech
                 allComponentsValid = false;
             }
             
+            if (energyManager == null)
+            {
+                Debug.LogWarning("MechController: Missing EnergyManager component! Energy management will not be available.");
+                // Note: Not setting allComponentsValid to false as EnergyManager is optional
+            }
+            
             return allComponentsValid;
         }
         
@@ -141,6 +156,7 @@ namespace MechLite.Mech
             Debug.Log($"  - Rigidbody2D: {(rb2d != null ? "✓ Found" : "✗ Missing")}");
             Debug.Log($"  - BoxCollider2D: {(boxCollider != null ? "✓ Found" : "✗ Missing")}");
             Debug.Log($"  - SpriteRenderer: {(spriteRenderer != null ? "✓ Found" : "✗ Missing")}");
+            Debug.Log($"  - EnergyManager: {(energyManager != null ? "✓ Found" : "⚠ Optional component missing")}");
         }
         
         #endregion
@@ -157,6 +173,21 @@ namespace MechLite.Mech
             
             if (enableDebugLogs)
                 Debug.Log("MechController: Stats system initialized");
+        }
+        
+        private void InitializeEnergyManager()
+        {
+            if (energyManager != null)
+            {
+                energyManager.Initialize(mechConfig, stats);
+                
+                if (enableDebugLogs)
+                    Debug.Log("MechController: Energy management system initialized");
+            }
+            else if (enableDebugLogs)
+            {
+                Debug.Log("MechController: No EnergyManager component found - energy management disabled");
+            }
         }
         
         private void OnStatChanged(StatType statType, float oldValue, float newValue)
@@ -180,6 +211,14 @@ namespace MechLite.Mech
             Debug.Log($"  - MoveSpeed: {stats.GetStat(StatType.MoveSpeed):F1}");
             Debug.Log($"  - Damage: {stats.GetStat(StatType.Damage):F1}");
             Debug.Log($"  - Armor: {stats.GetStat(StatType.Armor):F1}");
+            
+            if (energyManager != null)
+            {
+                Debug.Log($"MechController Energy Manager Status:");
+                Debug.Log($"  - Current Energy: {energyManager.CurrentEnergy:F1}/{energyManager.MaxEnergy:F1}");
+                Debug.Log($"  - Energy Percent: {(energyManager.EnergyPercent * 100):F1}%");
+                Debug.Log($"  - Is Regenerating: {energyManager.IsRegenerating}");
+            }
         }
         
         #endregion
