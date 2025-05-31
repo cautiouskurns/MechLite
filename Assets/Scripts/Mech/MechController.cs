@@ -10,6 +10,10 @@ namespace MechLite.Mech
     [RequireComponent(typeof(Rigidbody2D), typeof(BoxCollider2D), typeof(SpriteRenderer))]
     public class MechController : MonoBehaviour, IMechControllable
     {
+        [Header("Configuration")]
+        [SerializeField, Tooltip("Base stat configuration for this mech")]
+        private MechConfigSO mechConfig;
+        
         [Header("Debug")]
         [SerializeField, Tooltip("Enable detailed debug logging for development")]
         private bool enableDebugLogs = false;
@@ -19,8 +23,14 @@ namespace MechLite.Mech
         private BoxCollider2D boxCollider;
         private SpriteRenderer spriteRenderer;
         
+        // Stats system
+        private MechStats stats;
+        
         // Core state
         private bool isInitialized = false;
+        
+        // Public API
+        public MechStats Stats => stats;
         
         #region IMechControllable Implementation
         
@@ -38,12 +48,16 @@ namespace MechLite.Mech
                 return;
             }
             
+            // Initialize stats system
+            InitializeStats();
+            
             isInitialized = true;
             
             if (enableDebugLogs)
             {
                 Debug.Log($"MechController: Successfully initialized on '{gameObject.name}'");
                 LogComponentReferences();
+                LogStatsConfiguration();
             }
         }
         
@@ -52,10 +66,15 @@ namespace MechLite.Mech
             if (enableDebugLogs)
                 Debug.Log("MechController: Shutting down...");
             
+            // Unsubscribe from stats events
+            if (stats != null)
+                stats.OnStatChanged -= OnStatChanged;
+            
             isInitialized = false;
             rb2d = null;
             boxCollider = null;
             spriteRenderer = null;
+            stats = null;
         }
         
         #endregion
@@ -126,6 +145,45 @@ namespace MechLite.Mech
         
         #endregion
         
+        #region Stats System
+        
+        private void InitializeStats()
+        {
+            stats = new MechStats();
+            stats.Initialize(mechConfig);
+            
+            // Subscribe to stat change events
+            stats.OnStatChanged += OnStatChanged;
+            
+            if (enableDebugLogs)
+                Debug.Log("MechController: Stats system initialized");
+        }
+        
+        private void OnStatChanged(StatType statType, float oldValue, float newValue)
+        {
+            if (enableDebugLogs)
+            {
+                Debug.Log($"MechController: Stat changed - {statType}: {oldValue:F2} → {newValue:F2}");
+            }
+            
+            // Future: Trigger any stat-dependent updates here
+            // e.g., health bar updates, movement speed changes, etc.
+        }
+        
+        private void LogStatsConfiguration()
+        {
+            if (stats == null) return;
+            
+            Debug.Log("MechController Stats Configuration:");
+            Debug.Log($"  - Health: {stats.GetStat(StatType.Health):F1}/{stats.GetStat(StatType.MaxHealth):F1}");
+            Debug.Log($"  - Energy: {stats.GetStat(StatType.Energy):F1}/{stats.GetStat(StatType.MaxEnergy):F1}");
+            Debug.Log($"  - MoveSpeed: {stats.GetStat(StatType.MoveSpeed):F1}");
+            Debug.Log($"  - Damage: {stats.GetStat(StatType.Damage):F1}");
+            Debug.Log($"  - Armor: {stats.GetStat(StatType.Armor):F1}");
+        }
+        
+        #endregion
+        
         #region Public API
         
         public Rigidbody2D GetRigidbody2D() => rb2d;
@@ -137,6 +195,30 @@ namespace MechLite.Mech
             enableDebugLogs = enabled;
             if (enableDebugLogs)
                 Debug.Log("MechController: Debug logging enabled");
+        }
+        
+        /// <summary>
+        /// Get current value of a specific stat
+        /// </summary>
+        public float GetStat(StatType statType)
+        {
+            return stats?.GetStat(statType) ?? 0f;
+        }
+        
+        /// <summary>
+        /// Add a stat modifier to the mech
+        /// </summary>
+        public void AddStatModifier(StatModifier modifier)
+        {
+            stats?.AddModifier(modifier);
+        }
+        
+        /// <summary>
+        /// Remove a stat modifier from the mech
+        /// </summary>
+        public bool RemoveStatModifier(StatModifier modifier)
+        {
+            return stats?.RemoveModifier(modifier) ?? false;
         }
         
         #endregion

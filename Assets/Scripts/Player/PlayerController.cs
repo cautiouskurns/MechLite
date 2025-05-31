@@ -22,7 +22,6 @@ namespace MechLite.Player
 
         [Header("Debug")]
         [SerializeField] private bool enableDebugLogs = false;
-        [SerializeField] private bool enableRuntimeTuning = false;
 
         // Input tracking
         private float horizontalInput;
